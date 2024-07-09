@@ -1,18 +1,34 @@
-
 'use client';
 
 import { Call, CallRecording } from '@stream-io/video-react-sdk';
-
 import Loader from './Loader';
 import { useGetCalls } from '@/hooks/useGetCalls';
 import MeetingCard from './MeetingCard';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+// New hook to get the next meeting time
+export const useNextMeetingTime = () => {
+  const { upcomingCalls } = useGetCalls();
+  const [nextMeetingTime, setNextMeetingTime] = useState<Date | null>(null);
+
+  useEffect(() => {
+    if (upcomingCalls && upcomingCalls.length > 0) {
+      const sortedCalls = [...upcomingCalls].sort((a, b) => 
+        (a.state?.startsAt?.getTime() || 0) - (b.state?.startsAt?.getTime() || 0)
+      );
+      setNextMeetingTime(sortedCalls[0].state?.startsAt || null);
+    } else {
+      setNextMeetingTime(null);
+    }
+  }, [upcomingCalls]);
+
+  return nextMeetingTime;
+};
+
 const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
   const router = useRouter();
-  const { endedCalls, upcomingCalls, callRecordings, isLoading } =
-    useGetCalls();
+  const { endedCalls, upcomingCalls, callRecordings, isLoading } = useGetCalls();
   const [recordings, setRecordings] = useState<CallRecording[]>([]);
 
   const getCalls = () => {
@@ -40,7 +56,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
         return '';
     }
   };
-
+  
   useEffect(() => {
     const fetchRecordings = async () => {
       const callData = await Promise.all(
@@ -63,7 +79,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
 
   const calls = getCalls();
   const noCallsMessage = getNoCallsMessage();
-
+  
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
       {calls && calls.length > 0 ? (
