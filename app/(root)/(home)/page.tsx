@@ -1,11 +1,28 @@
+"use client";
 import MeetingTypeList from "@/components/ui/MeetingTypeList";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const Home = () => {
-  const now = new Date();
+  const [time, setTime] = useState("");
+  const [date, setDate] = useState("");
 
-  const time = now.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
-  const date = (new Intl.DateTimeFormat('en-US', {dateStyle: 'full'})).format(now);
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      setTime(
+        now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+      );
+      setDate(
+        new Intl.DateTimeFormat("en-US", { dateStyle: "full" }).format(now)
+      );
+    };
+    updateDateTime();
+
+    const intervalId = setInterval(updateDateTime, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <section className="flex size-full gap-10 text-white flex-col">
       <div className="h-[300px] w-full rounded-[20px] bg-hero bg-cover">
@@ -16,9 +33,7 @@ const Home = () => {
 
           <div className="flex flex-col gap-2">
             <h1 className="text-4xl font-extrabold lg:text-7xl">{time}</h1>
-            <p className="text-lg font-medium text-sky-1 lg:text-2xl">
-              {date}
-            </p>
+            <p className="text-lg font-medium text-sky-1 lg:text-2xl">{date}</p>
           </div>
         </div>
       </div>
